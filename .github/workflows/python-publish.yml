@@ -1,0 +1,123 @@
+import os
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+)
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+UPI_ID = "YOUR-UPI-ID"
+SUPPORT_USERNAME = "@YOUR_SUPPORT"
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [InlineKeyboardButton("🛒 SHOP", callback_data="shop")],
+        [InlineKeyboardButton("💳 PAYMENT", callback_data="payment")],
+        [InlineKeyboardButton("🎧 SUPPORT", callback_data="support")],
+    ]
+
+    await update.message.reply_text(
+        "🔥 Welcome to Our Shop!\n\n"
+        "👇 नीचे से option select करें:",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "shop":
+        keyboard = [
+            [InlineKeyboardButton("📦 Product 1 — ₹199", callback_data="product1")],
+            [InlineKeyboardButton("📦 Product 2 — ₹299", callback_data="product2")],
+            [InlineKeyboardButton("🔙 Back", callback_data="back")],
+        ]
+
+        await query.edit_message_text(
+            "🛒 SHOP\n\nअपना product select करें:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    elif query.data == "product1":
+        keyboard = [
+            [InlineKeyboardButton("💳 BUY NOW", callback_data="payment")],
+            [InlineKeyboardButton("🔙 Back", callback_data="shop")],
+        ]
+
+        await query.edit_message_text(
+            "📦 Product 1\n\n"
+            "💰 Price: ₹199\n\n"
+            "BUY NOW दबाकर payment details देखें।",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    elif query.data == "product2":
+        keyboard = [
+            [InlineKeyboardButton("💳 BUY NOW", callback_data="payment")],
+            [InlineKeyboardButton("🔙 Back", callback_data="shop")],
+        ]
+
+        await query.edit_message_text(
+            "📦 Product 2\n\n"
+            "💰 Price: ₹299\n\n"
+            "BUY NOW दबाकर payment details देखें।",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    elif query.data == "payment":
+        keyboard = [
+            [InlineKeyboardButton("🎧 PAYMENT SUPPORT", callback_data="support")],
+            [InlineKeyboardButton("🔙 Shop", callback_data="shop")],
+        ]
+
+        await query.edit_message_text(
+            f"💳 PAYMENT\n\n"
+            f"UPI ID: {UPI_ID}\n\n"
+            "Payment करने के बाद transaction screenshot "
+            "support को भेजें।",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    elif query.data == "support":
+        await query.edit_message_text(
+            f"🎧 SUPPORT\n\n"
+            f"Support: {SUPPORT_USERNAME}"
+        )
+
+    elif query.data == "back":
+        await start_callback(query)
+
+
+async def start_callback(query):
+    keyboard = [
+        [InlineKeyboardButton("🛒 SHOP", callback_data="shop")],
+        [InlineKeyboardButton("💳 PAYMENT", callback_data="payment")],
+        [InlineKeyboardButton("🎧 SUPPORT", callback_data="support")],
+    ]
+
+    await query.edit_message_text(
+        "🔥 Welcome to Our Shop!\n\n👇 Option select करें:",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+def main():
+    if not BOT_TOKEN:
+        raise ValueError("BOT_TOKEN is not set")
+
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(buttons))
+
+    print("Bot is running...")
+    app.run_polling()
+
+
+if __name__ == "__main__":
+    main()
+        with:
+          packages-dir: dist/
